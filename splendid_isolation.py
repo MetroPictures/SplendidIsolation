@@ -1,7 +1,6 @@
-import logging
+import os, pygame, logging
 from sys import argv, exit
 from time import time, sleep
-from multiprocessing import Process
 
 from core.api import MPServerAPI
 from core.video_pad import MPVideoPad
