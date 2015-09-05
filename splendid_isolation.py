@@ -1,12 +1,12 @@
-import os, pygame, logging
+import os, logging
 from sys import argv, exit
 from time import time, sleep
 
+from core.vars import BASE_DIR
 from core.api import MPServerAPI
-from core.video_pad import MPVideoPad
 from core.utils import get_config
 
-class SplendidIsolation(MPServerAPI, MPVideoPad):
+class SplendidIsolation(MPServerAPI):
 	def __init__(self):
 		SplendidIsolation.__init__(self)
 		
@@ -17,16 +17,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		if not super(SplendidIsolation, self).start():
 			return False
 
-		self.conf['d_files']['vp'] = {
-			'pid' : os.path.join(BASE_DIR, ".monitor", "vp.pid.txt"),
-			'log' : self.conf['d_files']['module']['log']
-		}
-		self.conf['video_pad'] = get_config('video_pad')
-
-		MPVideoPad.__init__(self)
-
-		# this blocks because video pad needs to be on the main thread!
-		self.start_video_pad()
+		# start iceweasel and video pad module
 
 	def play_main_voiceover(self):
 		return self.say(os.path.join("prompts", "main_voiceover.wav"))
