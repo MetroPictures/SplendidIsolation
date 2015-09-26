@@ -1,31 +1,37 @@
-import os, logging
+import tornado.web, os, logging
 from sys import argv, exit
 from time import time, sleep
 
 from core.vars import BASE_DIR
 from core.api import MPServerAPI
 from core.utils import get_config
+from core.video_pad import MPVideoPad
 
-class SplendidIsolation(MPServerAPI):
+class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
-		SplendidIsolation.__init__(self)
-		
+		MPServerAPI.__init__(self)
+
+		self.conf['d_files']['vid'] = {
+			'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
+		}
+
 		self.gpio_mappings = xrange(3, 6)
+		MPVideoPad.__init__(self)
+
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
 
 	def start(self):
 		if not super(SplendidIsolation, self).start():
 			return False
 
-		# start iceweasel and video pad module
+		return self.start_video_pad()
 
 	def play_main_voiceover(self):
 		return self.say(os.path.join("prompts", "main_voiceover.wav"))
 
-	def interrupt_video(self):
-		logging.info("Interrupting the video!")
+	def interrupt_voiceover(self):
+		logging.info("Interrupting the voiceover!")
 
-		# interrupt video here!  How? TBD...
 		return False
 
 	def map_pin_to_key(self, pin):
@@ -39,7 +45,7 @@ class SplendidIsolation(MPServerAPI):
 		logging.debug("(play_tone overridden.)")
 
 		if self.play_audio(os.path.join(self.conf['media_dir'], "key_sounds", "key_sound_%d.wav" % tone)):
-			return self.interrupt_video()
+			return self.interrupt_voiceover()
 
 	def run_script(self):
 		super(SplendidIsolation, self).run_script()
