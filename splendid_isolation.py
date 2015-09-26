@@ -1,4 +1,4 @@
-import tornado.web, os, logging
+import tornado.web, os, logging, random
 from sys import argv, exit
 from time import time, sleep
 
@@ -15,7 +15,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 			'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
 		}
 
-		self.gpio_mappings = xrange(3, 6)
+		self.gpio_mappings = [3]
 		MPVideoPad.__init__(self)
 
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
@@ -34,12 +34,9 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 
 		return False
 
-	def map_pin_to_key(self, pin):
-		return (pin - 3)
-
 	def map_pin_to_tone(self, pin):
 		logging.debug("(map_pin_to_tone overridden.)")
-		return self.map_pin_to_key(pin)
+		return random.randint(0, 3)
 
 	def play_tone(self, tone):
 		logging.debug("(play_tone overridden.)")
