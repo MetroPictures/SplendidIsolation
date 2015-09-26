@@ -3,6 +3,10 @@
 
 .venv/
 .monitor/
+
 media/
+!media/video/*.html
+!media/video/*.js
+!media/video/*.css
 
 config.json
