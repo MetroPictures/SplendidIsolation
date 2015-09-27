@@ -27,22 +27,23 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		return self.start_video_pad()
 
 	def play_main_voiceover(self):
-		return self.say(os.path.join("prompts", "main_voiceover.wav"))
-
-	def interrupt_voiceover(self):
-		logging.info("Interrupting the voiceover!")
-
-		return False
+		return self.say(os.path.join("prompts", "main_voiceover.wav"), interruptable=True)
 
 	def map_pin_to_tone(self, pin):
 		logging.debug("(map_pin_to_tone overridden.)")
-		return random.randint(0, 3)
+		return random.randint(0, 2)
 
-	def play_tone(self, tone):
-		logging.debug("(play_tone overridden.)")
+	def press(self, tone):
+		logging.debug("(press overridden.)")
 
-		if self.play_audio(os.path.join(self.conf['media_dir'], "key_sounds", "key_sound_%d.wav" % tone)):
-			return self.interrupt_voiceover()
+		try:
+			return self.pause() and \
+				self.play_clip(os.path.join("key_sounds", "key_sound_%d.wav" % tone)) and \
+				self.unpause()
+		except Exception as e:
+			print e, type(e)
+		
+		return False
 
 	def run_script(self):
 		super(SplendidIsolation, self).run_script()
