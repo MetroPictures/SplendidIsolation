@@ -33,12 +33,13 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		logging.debug("(map_pin_to_tone overridden.)")
 		return random.randint(0, 2)
 
-	def press(self, tone):
+	def press(self, key):
 		logging.debug("(press overridden.)")
+		key = self.map_pin_to_tone(key)
 
 		try:
 			return self.pause() and \
-				self.play_clip(os.path.join("key_sounds", "key_sound_%d.wav" % tone)) and \
+				self.play_clip(os.path.join("key_sounds", "key_sound_%d.wav" % key)) and \
 				self.unpause()
 		except Exception as e:
 			print e, type(e)
