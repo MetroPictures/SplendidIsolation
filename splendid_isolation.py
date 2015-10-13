@@ -11,6 +11,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
 		MPServerAPI.__init__(self)
 
+		self.main_video = "hypercard_2_256kb.mp4"
 		self.conf['d_files']['vid'] = {
 			'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
 		}
@@ -18,31 +19,38 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		MPVideoPad.__init__(self)
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
 
-	def start(self):
-		if not super(SplendidIsolation, self).start():
+	def stop(self):
+		if not super(SplendidIsolation, self).stop():
 			return False
 
-		return self.start_video_pad()
+		return self.stop_video_pad()
 
 	def play_main_voiceover(self):
+		self.play_video(self.main_video)
 		return self.say(os.path.join("prompts", "main_voiceover.wav"), interruptable=True)
 
-	def map_pin_to_tone(self, pin):
+	def map_key_to_tone(self, key):
 		logging.debug("(map_pin_to_tone overridden.)")
 		return random.randint(0, 2)
 
 	def press(self, key):
 		logging.debug("(press overridden.)")
-		key = self.map_pin_to_tone(key)
+		key = self.map_key_to_tone(key)
 
 		try:
 			return self.pause() and \
+				self.pause_video(self.main_video) and \
 				self.play_clip(os.path.join("key_sounds", "key_sound_%d.wav" % key)) and \
-				self.unpause()
+				self.unpause() and \
+				self.unpause_video(self.main_video)
 		except Exception as e:
 			print e, type(e)
 		
 		return False
+
+	def on_hang_up(self):
+		self.stop_video_pad()
+		return super(SplendidIsolation, self).on_hang_up()
 
 	def run_script(self):
 		super(SplendidIsolation, self).run_script()
