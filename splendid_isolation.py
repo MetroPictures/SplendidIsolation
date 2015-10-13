@@ -7,8 +7,6 @@ from core.api import MPServerAPI
 from core.utils import get_config
 from core.video_pad import MPVideoPad
 
-from core.gpio import IRReceiverThread, ButtonThread
-
 class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
 		MPServerAPI.__init__(self)
@@ -17,11 +15,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 			'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
 		}
 
-		BUTTON_PINS = [6, 13, 19, 26]
-		self.gpio_mappings = [IRReceiverThread()] + [ButtonThread(pin) for pin in BUTTON_PINS]
-
 		MPVideoPad.__init__(self)
-
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
 
 	def start(self):
