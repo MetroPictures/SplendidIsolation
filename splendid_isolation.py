@@ -1,23 +1,40 @@
-import tornado.web, os, logging, random
+import tornado.web, os, json, logging, random
 from sys import argv, exit
 from time import time, sleep
+from multiprocessing import Process
 
 from core.vars import BASE_DIR
 from core.api import MPServerAPI
-from core.utils import get_config
+from core.utils import get_config, start_daemon, stop_daemon
 from core.video_pad import MPVideoPad
 
 class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
 		MPServerAPI.__init__(self)
 
-		self.main_video = "hypercard_2_256kb.mp4"
-		self.conf['d_files']['vid'] = {
-			'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
-		}
+		self.main_video = "hypercard_2_256kb.mp4"		
+		self.conf['d_files'].update({
+			'vid' : {
+				'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
+			},
+			'video_listener_callback' : {
+				'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id']),
+				'pid' : os.path.join(BASE_DIR, ".monitor", "video_listener_callback.pid.txt")
+			}
+		})
 
 		MPVideoPad.__init__(self)
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
+
+	def video_listener_callback(self, info):
+		try:
+			video_info = json.loads(self.db.get("video_%d" % info['index']))
+			video_info.update(info['info'])
+		except Exception as e:
+			video_info = info['info']
+
+		self.db.set("video_%d" % info['index'], json.dumps(video_info))		
+		logging.info("VIDEO INFO UPDATED: %s" % self.db.get("video_%d" % info['index']))
 
 	def stop(self):
 		if not super(SplendidIsolation, self).stop():
@@ -26,12 +43,15 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		return self.stop_video_pad()
 
 	def play_main_voiceover(self):
-		self.play_video(self.main_video)
+		self.play_video(self.main_video, video_callback=self.video_listener_callback)
 		return self.say(os.path.join("prompts", "main_voiceover.wav"), interruptable=True)
 
 	def map_key_to_tone(self, key):
 		logging.debug("(map_pin_to_tone overridden.)")
 		return random.randint(0, 2)
+
+	def pause_video(self, video, unpause=False, video_callback=None):
+		return super(SplendidIsolation, self).pause_video(video, unpause=unpause, video_callback=self.video_listener_callback)
 
 	def press(self, key):
 		logging.debug("(press overridden.)")
@@ -47,6 +67,12 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 			print e, type(e)
 		
 		return False
+
+	def reset_for_call(self):
+		for video_mapping in self.video_mappings:
+			self.db.delete("video_%s" % video_mapping.index)
+
+		super(SplendidIsolation, self).reset_for_call()
 
 	def on_hang_up(self):
 		self.stop_video_pad()
