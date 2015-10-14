@@ -1,11 +1,10 @@
 import tornado.web, os, json, logging, random
 from sys import argv, exit
-from time import time, sleep
-from multiprocessing import Process
+from time import sleep
 
 from core.vars import BASE_DIR
 from core.api import MPServerAPI
-from core.utils import get_config, start_daemon, stop_daemon
+from core.utils import get_config
 from core.video_pad import MPVideoPad
 
 class SplendidIsolation(MPServerAPI, MPVideoPad):
