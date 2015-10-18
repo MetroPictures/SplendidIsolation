@@ -11,7 +11,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
 		MPServerAPI.__init__(self)
 
-		self.main_video = "hypercard_2_256kb.mp4"		
+		self.main_video = "splendid_isolation.mp4"		
 		self.conf['d_files'].update({
 			'vid' : {
 				'log' : os.path.join(BASE_DIR, ".monitor", "%s.log.txt" % self.conf['rpi_id'])
