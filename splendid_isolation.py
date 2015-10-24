@@ -27,7 +27,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 			self.key_sounds = [os.path.join(r, f) for f in files]
 			print "unshuffled:"
 			print self.key_sounds
-			
+
 			shuffle(self.key_sounds)
 			break
 
@@ -54,23 +54,18 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 
 	def play_main_voiceover(self):
 		self.play_video(self.main_video, video_callback=self.video_listener_callback)
-		return self.say(os.path.join("prompts", "main_voiceover.wav"), interruptable=True)
-
-	def map_key_to_tone(self, key):
-		logging.debug("(map_pin_to_tone overridden.)")
-		return random.randint(0, 2)
+		return self.say(os.path.join("prompts", "splendidisolation2.wav"), interruptable=True)
 
 	def pause_video(self, video, unpause=False, video_callback=None):
 		return super(SplendidIsolation, self).pause_video(video, unpause=unpause, video_callback=self.video_listener_callback)
 
 	def press(self, key):
 		logging.debug("(press overridden.)")
-		key = self.map_key_to_tone(key)
 
 		try:
 			return self.pause() and \
 				self.pause_video(self.main_video) and \
-				self.play_clip(os.path.join("key_sounds", "key_sound_%d.wav" % key)) and \
+				self.play_clip(self.key_sounds[key]) and \
 				self.unpause() and \
 				self.unpause_video(self.main_video)
 		except Exception as e:
