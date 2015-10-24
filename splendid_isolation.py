@@ -25,13 +25,8 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 
 		for r, _, files in os.walk(os.path.join(self.conf['media_dir'], "key_sounds")):
 			self.key_sounds = [os.path.join(r, f) for f in files if f not in UNPLAYABLE_FILES]
-			print "unshuffled:"
-			print self.key_sounds
-
 			shuffle(self.key_sounds)
 			break
-
-		print self.key_sounds
 
 		MPVideoPad.__init__(self)
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
@@ -65,7 +60,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		try:
 			return self.pause() and \
 				self.pause_video(self.main_video) and \
-				self.play_clip(self.key_sounds[key]) and \
+				self.play_clip(self.key_sounds[int(key) - 1]) and \
 				self.unpause() and \
 				self.unpause_video(self.main_video)
 		except Exception as e:
