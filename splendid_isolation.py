@@ -1,6 +1,7 @@
 import tornado.web, os, json, logging, random
 from sys import argv, exit
 from time import sleep
+from random import shuffle
 
 from core.vars import BASE_DIR
 from core.api import MPServerAPI
@@ -21,6 +22,16 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 				'pid' : os.path.join(BASE_DIR, ".monitor", "video_listener_callback.pid.txt")
 			}
 		})
+
+		for r, _, files in os.walk(os.path.join(self.conf['media_dir'], "key_sounds")):
+			self.key_sounds = [os.path.join(r, f) for f in files]
+			print "unshuffled:"
+			print self.key_sounds
+			
+			shuffle(self.key_sounds)
+			break
+
+		print self.key_sounds
 
 		MPVideoPad.__init__(self)
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
