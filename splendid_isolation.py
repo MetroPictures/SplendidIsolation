@@ -3,7 +3,7 @@ from sys import argv, exit
 from time import sleep
 from random import shuffle
 
-from core.vars import BASE_DIR
+from core.vars import BASE_DIR, UNPLAYABLE_FILES
 from core.api import MPServerAPI
 from core.utils import get_config
 from core.video_pad import MPVideoPad
@@ -24,7 +24,7 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		})
 
 		for r, _, files in os.walk(os.path.join(self.conf['media_dir'], "key_sounds")):
-			self.key_sounds = [os.path.join(r, f) for f in files]
+			self.key_sounds = [os.path.join(r, f) for f in files if f not in UNPLAYABLE_FILES]
 			print "unshuffled:"
 			print self.key_sounds
 
