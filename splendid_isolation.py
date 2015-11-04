@@ -8,9 +8,16 @@ from core.api import MPServerAPI
 from core.utils import get_config
 from core.video_pad import MPVideoPad
 
+PIN_MAP = [5, 6, 7, 8, 9, 10, 14, 15, 18]
+
 class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def __init__(self):
 		MPServerAPI.__init__(self)
+
+		for r, _, files in os.walk(os.path.join(self.conf['media_dir'], "key_sounds")):
+			self.key_sounds = [os.path.join(r, f) for f in files if f not in UNPLAYABLE_FILES]
+			shuffle(self.key_sounds)
+			break
 
 		self.main_video = "splendid_isolation.mp4"		
 		self.conf['d_files'].update({
@@ -22,11 +29,6 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 				'pid' : os.path.join(BASE_DIR, ".monitor", "video_listener_callback.pid.txt")
 			}
 		})
-
-		for r, _, files in os.walk(os.path.join(self.conf['media_dir'], "key_sounds")):
-			self.key_sounds = [os.path.join(r, f) for f in files if f not in UNPLAYABLE_FILES]
-			shuffle(self.key_sounds)
-			break
 
 		MPVideoPad.__init__(self)
 		logging.basicConfig(filename=self.conf['d_files']['module']['log'], level=logging.DEBUG)
@@ -54,13 +56,20 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 	def pause_video(self, video, unpause=False, video_callback=None):
 		return super(SplendidIsolation, self).pause_video(video, unpause=unpause, video_callback=self.video_listener_callback)
 
+	def map_key_to_tone(self, key):
+		return PIN_MAP.index(key)
+
+	def reset_for_call(self):
+		shuffle(self.key_sounds)
+		super(SplendidIsolation, self).reset_for_call()
+
 	def press(self, key):
 		logging.debug("(press overridden.)")
 
 		try:
 			return self.pause() and \
 				self.pause_video(self.main_video) and \
-				self.play_clip(self.key_sounds[int(key) - 1]) and \
+				self.play_clip(self.key_sounds[key]) and \
 				self.unpause() and \
 				self.unpause_video(self.main_video)
 		except Exception as e:
@@ -73,10 +82,6 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 			return False
 
 		return self.play_video(self.main_video, video_callback=self.video_listener_callback)
-
-	def on_hang_up(self):
-		self.stop_video_pad()
-		return super(SplendidIsolation, self).on_hang_up()
 
 	def run_script(self):
 		super(SplendidIsolation, self).run_script()
