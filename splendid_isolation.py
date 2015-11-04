@@ -42,13 +42,13 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		logging.info("VIDEO INFO UPDATED: %s" % self.db.get("video_%d" % info['index']))
 
 	def stop(self):
-		if not super(SplendidIsolation, self).stop():
-			return False
+		self.stop_video_pad()
+		for video_mapping in self.video_mappings:
+			self.db.delete("video_%s" % video_mapping.index)
 
-		return self.stop_video_pad()
+		return super(SplendidIsolation, self).stop()
 
 	def play_main_voiceover(self):
-		self.play_video(self.main_video, video_callback=self.video_listener_callback)
 		return self.say(os.path.join("prompts", "splendidisolation2.wav"), interruptable=True)
 
 	def pause_video(self, video, unpause=False, video_callback=None):
@@ -68,11 +68,11 @@ class SplendidIsolation(MPServerAPI, MPVideoPad):
 		
 		return False
 
-	def reset_for_call(self):
-		for video_mapping in self.video_mappings:
-			self.db.delete("video_%s" % video_mapping.index)
+	def start(self):
+		if not super(SplendidIsolation, self).start():
+			return False
 
-		super(SplendidIsolation, self).reset_for_call()
+		return self.play_video(self.main_video, video_callback=self.video_listener_callback)
 
 	def on_hang_up(self):
 		self.stop_video_pad()
